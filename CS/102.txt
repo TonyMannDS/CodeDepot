@@ -1,0 +1,26 @@
+EnvelopeDefinition envDef = new EnvelopeDefinition();
+envDef.EmailSubject = "[DocuSign C# SDK] - Please sign this doc";
+
+// assign recipient to template role by setting name, email, and role name.  Note that the
+// template role name must match the placeholder role name saved in your account template.  
+TemplateRole tRole = new TemplateRole();
+tRole.Email = "{USER_EMAIL}";
+tRole.Name = "{USER_NAME}";
+tRole.RoleName = "{ROLE}";
+
+List<TemplateRole> rolesList = new List<TemplateRole>() { tRole };
+
+// add the role to the envelope and assign valid templateId from your account
+envDef.TemplateRoles = rolesList;
+envDef.TemplateId = "{TEMPLATE_ID}";
+
+// set envelope status to "sent" to immediately send the signature request
+envDef.Status = "sent";
+
+// |EnvelopesApi| contains methods related to creating and sending Envelopes (aka signature requests)
+EnvelopesApi envelopesApi = new EnvelopesApi();
+EnvelopeSummary envelopeSummary = envelopesApi.CreateEnvelope(accountId, envDef);
+
+// print the JSON response
+Console.WriteLine("EnvelopeSummary:\n{0}", JsonConvert.SerializeObject(envelopeSummary));
+Trace.WriteLine("Envelope has been sent to " + tRole.Email);

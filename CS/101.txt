@@ -1,0 +1,45 @@
+// Read a file from disk to use as a document.
+byte[] fileBytes = File.ReadAllBytes("test.pdf");
+
+EnvelopeDefinition envDef = new EnvelopeDefinition();
+envDef.EmailSubject = "[DocuSign C# SDK] - Please sign this doc";
+
+// Add a document to the envelope
+Document doc = new Document();
+doc.DocumentBase64 = System.Convert.ToBase64String(fileBytes);
+doc.Name = "TestFile.pdf";
+doc.DocumentId = "1";
+
+envDef.Documents = new List<Document>();
+envDef.Documents.Add(doc);
+
+// Add a recipient to sign the documeent
+Signer signer = new Signer();
+signer.Email = "{USER_EMAIL}";
+signer.Name = "{USER_NAME}";
+signer.RecipientId = "1";
+
+// Create a |SignHere| tab somewhere on the document for the recipient to sign
+signer.Tabs = new Tabs();
+signer.Tabs.SignHereTabs = new List<SignHere>();
+SignHere signHere = new SignHere();
+signHere.DocumentId = "1";
+signHere.PageNumber = "1";
+signHere.RecipientId = "1";
+signHere.XPosition = "100";
+signHere.YPosition = "150";
+signer.Tabs.SignHereTabs.Add(signHere);
+
+envDef.Recipients = new Recipients();
+envDef.Recipients.Signers = new List<Signer>();
+envDef.Recipients.Signers.Add(signer);
+
+// set envelope status to "sent" to immediately send the signature request
+envDef.Status = "sent";
+
+// |EnvelopesApi| contains methods related to creating and sending Envelopes (aka signature requests)
+EnvelopesApi envelopesApi = new EnvelopesApi();
+EnvelopeSummary envelopeSummary = envelopesApi.CreateEnvelope(accountId, envDef);
+
+// print the JSON response
+Console.WriteLine("EnvelopeSummary:\n" + JsonConvert.SerializeObject(envelopeSummary));
